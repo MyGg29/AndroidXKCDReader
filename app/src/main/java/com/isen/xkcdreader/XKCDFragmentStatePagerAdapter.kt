@@ -7,7 +7,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter
 class XKCDFragmentStatePagerAdapter(val fragmentManager: FragmentManager, val xkcds : ArrayList<XKCDItem>)
     : FragmentStatePagerAdapter(fragmentManager) {
     override fun getItem(position: Int): Fragment {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return XKCDFragment.newInstance(xkcds[position])
     }
 
     override fun getCount(): Int {

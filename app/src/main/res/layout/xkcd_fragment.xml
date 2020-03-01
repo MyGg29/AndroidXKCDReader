@@ -23,7 +23,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/xkcd_alt_text"
-        app:srcCompat="@drawable/placeholder"
         android:contentDescription="TODO: INSERT ALT TEXT HERE" />
 
     <TextView
