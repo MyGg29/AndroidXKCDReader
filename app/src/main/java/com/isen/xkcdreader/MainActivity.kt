@@ -9,16 +9,7 @@ import java.net.URL
 import android.content.Intent
 import android.net.Uri
 import kotlinx.android.synthetic.main.activity_main.*
-import android.graphics.drawable.Drawable
-import android.graphics.Bitmap
-import android.os.Environment
-import android.widget.ImageView
-import com.squareup.picasso.Picasso
-import com.squareup.picasso.Target
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.lang.Exception
+
 
 
 class MainActivity : AppCompatActivity() {
