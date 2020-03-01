@@ -1,10 +1,25 @@
 package com.isen.xkcdreader
 
+
 import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.viewpager.widget.ViewPager
 import java.net.URL
+import android.content.Intent
+import android.net.Uri
+import kotlinx.android.synthetic.main.activity_main.*
+import android.graphics.drawable.Drawable
+import android.graphics.Bitmap
+import android.os.Environment
+import android.widget.ImageView
+import com.squareup.picasso.Picasso
+import com.squareup.picasso.Target
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.lang.Exception
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,12 +59,21 @@ class MainActivity : AppCompatActivity() {
         // END OF DUMMY DATA
 
         setContentView(R.layout.activity_main)
-
         viewPager = findViewById(R.id.viewPager)
         pagerAdapter = XKCDFragmentStatePagerAdapter(supportFragmentManager, xkcds)
         viewPager.adapter = pagerAdapter
 
         // TODO: check if this can be improved, or if this should only be done when savedInstanceState == null
         viewPager.currentItem = 0
+        shareButton.setOnClickListener{
+            val shareIntent = Intent()
+            shareIntent.action = Intent.ACTION_SEND
+            //val uriToXKCD = Uri.parse("https://imgs.xkcd.com/comics/stargazing_3.png")
+            val uriToXKCD = Uri.parse("android.resource://com.isen.xkcdreader/" + R.drawable.placeholder)
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uriToXKCD)
+            shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.shareMessage))
+            shareIntent.type = "image/png"
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
+        }
     }
 }
