@@ -1,13 +1,20 @@
 package com.isen.xkcdreader
 
 
+import android.app.PendingIntent.getActivity
+import android.content.ContentValues
 import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.viewpager.widget.ViewPager
 import java.net.URL
 import android.content.Intent
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
+import android.provider.MediaStore
+import android.util.Log
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -66,5 +73,27 @@ class MainActivity : AppCompatActivity() {
             shareIntent.type = "image/png"
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
         }
+        val drawable = ResourcesCompat.getDrawable(this.getResources(),drawableId)
+
+        downloadButton.setOnClickListener{
+            saveImageToInternalStorage(R.drawable.placeholder, "title")
+        }
+    }
+    fun saveImageToInternalStorage(drawableId:Int, title: String): Uri {
+        // Get the image from drawable resource as drawable object
+
+        // Get the bitmap from drawable object
+        val bitmap = (drawable as BitmapDrawable).bitmap
+
+        // Save image to gallery
+        val savedImageURL = MediaStore.Images.Media.insertImage(
+            contentResolver,
+            bitmap,
+            title,
+            "Image of $title"
+        )
+        Log.d("test",savedImageURL)
+        // Parse the gallery image url to uri
+        return Uri.parse(savedImageURL)
     }
 }
