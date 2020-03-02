@@ -7,10 +7,13 @@ import android.os.Bundle
 import androidx.viewpager.widget.ViewPager
 import java.net.URL
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
+import android.widget.ImageView
 import com.android.volley.Request
 import com.android.volley.Response
+import com.android.volley.toolbox.ImageRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
@@ -32,21 +35,54 @@ class MainActivity : AppCompatActivity() {
         // TODO: replace this with network fetch
         // Probably only a few of XKCDs around the current one should be fetched
 
+        // TODO: make a better code
+        // This is completely asynchronous, I don't know how it will act if the activity is
+        // half loaded or if the connection is down
         val queue = Volley.newRequestQueue(this)
         val url = "https://xkcd.com/info.0.json"
 
         // Request a string response from the provided URL.
-        val stringRequest = JsonObjectRequest(Request.Method.GET, url, null,
+        val jsonRequest = JsonObjectRequest(Request.Method.GET, url, null,
+
             Response.Listener { response ->
-                // Display the first 500 characters of the response string.
+
+                // Display the response and save it temporarily
                 Log.d("Pulling data", "Response is: $response")
+                val tempXkcd : XKCDItem = XKCDItem(
+                    response.getInt("num"),
+                    URL("https://xkcd.com/${response.getString("link")}"),
+                    response.getString("safe_title"),
+                    response.getString("alt"),
+                    BitmapFactory.decodeResource(this.resources,
+                        R.drawable.placeholder)
+                )
+
+                // Create a request to get the images
+                val imageRequest = ImageRequest(response.getString("img"),
+
+                    Response.Listener { response_img ->
+                        // Here we finally add the final XKCD with the proper image
+                        xkcds.add(tempXkcd.copy(img = response_img))
+                        pagerAdapter.notifyDataSetChanged()
+                    },
+                    1920, 1080, ImageView.ScaleType.FIT_CENTER, Bitmap.Config.RGB_565,
+
+                    Response.ErrorListener {
+                        // If we can't get the image, we'll just add the temporary xkcd with the
+                        // placeholder image
+                        xkcds.add(tempXkcd)
+                        pagerAdapter.notifyDataSetChanged()
+                    }
+                )
+
+                queue.add(imageRequest)
             },
-            Response.ErrorListener {
-                Log.d("Pulling data","That didn't work!")
-            })
+
+            Response.ErrorListener { }
+        )
 
         // Add the request to the RequestQueue.
-        queue.add(stringRequest)
+        queue.add(jsonRequest)
 
         // Dummy XKCDs for test purposes
         xkcds.add(
