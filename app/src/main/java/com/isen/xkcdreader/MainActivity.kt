@@ -8,6 +8,12 @@ import androidx.viewpager.widget.ViewPager
 import java.net.URL
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -25,6 +31,23 @@ class MainActivity : AppCompatActivity() {
 
         // TODO: replace this with network fetch
         // Probably only a few of XKCDs around the current one should be fetched
+
+        val queue = Volley.newRequestQueue(this)
+        val url = "https://xkcd.com/info.0.json"
+
+        // Request a string response from the provided URL.
+        val stringRequest = JsonObjectRequest(Request.Method.GET, url, null,
+            Response.Listener { response ->
+                // Display the first 500 characters of the response string.
+                Log.d("Pulling data", "Response is: $response")
+            },
+            Response.ErrorListener {
+                Log.d("Pulling data","That didn't work!")
+            })
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest)
+
         // Dummy XKCDs for test purposes
         xkcds.add(
             XKCDItem(
