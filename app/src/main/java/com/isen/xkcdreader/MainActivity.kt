@@ -73,7 +73,6 @@ class MainActivity : AppCompatActivity() {
             shareIntent.type = "image/png"
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
         }
-        val drawable = ResourcesCompat.getDrawable(this.getResources(),drawableId)
 
         downloadButton.setOnClickListener{
             saveImageToInternalStorage(R.drawable.placeholder, "title")
@@ -81,6 +80,7 @@ class MainActivity : AppCompatActivity() {
     }
     fun saveImageToInternalStorage(drawableId:Int, title: String): Uri {
         // Get the image from drawable resource as drawable object
+        val drawable = ResourcesCompat.getDrawable(this.getResources(),drawableId, null)
 
         // Get the bitmap from drawable object
         val bitmap = (drawable as BitmapDrawable).bitmap
