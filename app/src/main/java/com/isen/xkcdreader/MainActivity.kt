@@ -61,9 +61,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
         }
 
-        randomButton.setOnClickListener {
-            val randomInt : Int = (0..latestXKCDIndex).random()
-            viewPager.currentItem = randomInt
-        }
+        randomButton.setOnClickListener { switchToRandomXKCD() }
+    }
+
+    private fun switchToRandomXKCD() {
+        val randomInt : Int = (0..latestXKCDIndex).random()
+        viewPager.currentItem = randomInt
     }
 }
