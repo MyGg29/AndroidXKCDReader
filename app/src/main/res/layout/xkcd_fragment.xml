@@ -21,7 +21,7 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="TITLE PLACEHOLDER" />
 
-    <ImageView
+    <com.ortiz.touchview.TouchImageView
         android:id="@+id/xkcd_img"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
