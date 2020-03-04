@@ -36,6 +36,20 @@ class MainActivity : AppCompatActivity() {
 
         // TODO: replace this with network fetch
         // Probably only a few of XKCDs around the current one should be fetched
+        // Dummy XKCDs for test purposes
+        for (index in 0..latestXKCDIndex) {
+            xkcds.add(
+                XKCDItem(
+                    index,
+                    URL("https://xkcd.com/${index + 1}/"),
+                    "This is the XKCD n°${index + 1}",
+                    "This is the alt text for the XKCD n°${index + 1}.",
+                    BitmapFactory.decodeResource(this.resources, R.drawable.placeholder)
+                )
+            )
+        }
+
+        // END OF DUMMY DATA
 
         // TODO: make a better code
         // This is completely asynchronous, I don't know how it will act if the activity is
@@ -50,7 +64,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Display the response and save it temporarily
                 Log.d("Pulling data", "Response is: $response")
-                val tempXkcd : XKCDItem = XKCDItem(
+                val tempXkcd = XKCDItem(
                     response.getInt("num"),
                     URL("https://xkcd.com/${response.getString("link")}"),
                     response.getString("safe_title"),
@@ -66,6 +80,7 @@ class MainActivity : AppCompatActivity() {
                         // Here we finally add the final XKCD with the proper image
                         xkcds.add(tempXkcd.copy(img = response_img))
                         pagerAdapter.notifyDataSetChanged()
+                        viewPager.currentItem = xkcds.last().id
                     },
                     1920, 1080, ImageView.ScaleType.FIT_CENTER, Bitmap.Config.RGB_565,
 
@@ -74,41 +89,26 @@ class MainActivity : AppCompatActivity() {
                         // placeholder image
                         xkcds.add(tempXkcd)
                         pagerAdapter.notifyDataSetChanged()
+                        viewPager.currentItem = xkcds.last().id
                     }
                 )
 
                 queue.add(imageRequest)
             },
 
-            Response.ErrorListener { }
+            Response.ErrorListener {
+                Log.e("Volley", "Error while waiting for response", it)
+            }
         )
 
         // Add the request to the RequestQueue.
         queue.add(jsonRequest)
-
-        // Dummy XKCDs for test purposes
-        for (index in 0..latestXKCDIndex) {
-            xkcds.add(
-                XKCDItem(
-                    1179,
-                    URL("https://xkcd.com/${index + 1}/"),
-                    "This is the XKCD n°${index + 1}",
-                    "This is the alt text for the XKCD n°${index + 1}.",
-                    BitmapFactory.decodeResource(this.getResources(),
-                        R.drawable.placeholder)
-                )
-            )
-        }
-
-        // END OF DUMMY DATA
 
         setContentView(R.layout.activity_main)
         viewPager = findViewById(R.id.viewPager)
         pagerAdapter = XKCDFragmentStatePagerAdapter(supportFragmentManager, xkcds)
         viewPager.adapter = pagerAdapter
 
-        // TODO: check if this can be improved, or if this should only be done when savedInstanceState == null
-        viewPager.currentItem = 0
         shareButton.setOnClickListener{
             val shareIntent = Intent()
             shareIntent.action = Intent.ACTION_SEND
