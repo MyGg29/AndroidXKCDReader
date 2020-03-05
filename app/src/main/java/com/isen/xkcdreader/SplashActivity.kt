@@ -39,7 +39,9 @@ class SplashActivity : Activity() {
                 // Display the response and save it temporarily
                 Log.d("Pulling data", "Response is: $response")
 
-                startActivity(Intent(this, MainActivity::class.java))
+                val intent : Intent = Intent(this, MainActivity::class.java)
+                intent.putExtra("XKCDLatestID", response.getInt("num"))
+                startActivity(intent)
                 finish()
             },
 

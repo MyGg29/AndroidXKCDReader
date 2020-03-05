@@ -21,16 +21,23 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 
 
-class MainActivity : AppCompatActivity() {
+abstract class MainActivity : AppCompatActivity() {
 
     private lateinit var viewPager: ViewPager
     private val xkcds : ArrayList<XKCDItem> = arrayListOf()
     private lateinit var pagerAdapter: XKCDFragmentStatePagerAdapter
-    private val latestXKCDIndex : Int = 100
+    private var latestXKCDIndex : Int = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Get the number of XKCDs from the SplashActivity
+        latestXKCDIndex = intent.getIntExtra("XKCDLatestID", 1)
+        Log.d("MainActivity", "latestXKCDIndex is $latestXKCDIndex")
+
+        // Make the placeholder bitmap (will be shared between XKCDs to avoid memory hogging
+        val bitmap : Bitmap = BitmapFactory.decodeResource(this.resources, R.drawable.placeholder)
 
         // TODO: check if savedInstanceState has saved state and if so recover it
 
@@ -44,7 +51,7 @@ class MainActivity : AppCompatActivity() {
                     URL("https://xkcd.com/${index + 1}/"),
                     "This is the XKCD n°${index + 1}",
                     "This is the alt text for the XKCD n°${index + 1}.",
-                    BitmapFactory.decodeResource(this.resources, R.drawable.placeholder)
+                    bitmap
                 )
             )
         }
