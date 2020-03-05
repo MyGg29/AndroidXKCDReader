@@ -27,22 +27,39 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/viewPager">
 
-        <Button
+        <ImageButton
             android:id="@+id/downloadButton"
-            android:layout_width="wrap_content"
+            android:src="@drawable/ic_download"
+            android:padding="5dp"
+            android:tint="@color/colorAccent"
+            android:layout_width="50dp"
             android:layout_height="wrap_content"
-            android:text="@string/download" />
+            android:background="@color/colorPrimary"
+            android:layout_margin="5dp"
+            android:scaleType="fitCenter" />
 
-        <Button
+
+        <ImageButton
             android:id="@+id/shareButton"
-            android:layout_width="wrap_content"
+            android:src="@drawable/ic_share_alt"
+            android:padding="5dp"
+            android:tint="@color/colorAccent"
+            android:layout_width="50dp"
             android:layout_height="wrap_content"
-            android:text="@string/share" />
+            android:background="@color/colorPrimary"
+            android:layout_margin="5dp"
+            android:scaleType="fitCenter"/>
 
-        <Button
+        <ImageButton
             android:id="@+id/randomButton"
-            android:layout_width="wrap_content"
+            android:src="@drawable/ic_random"
+            android:padding="5dp"
+            android:tint="@color/colorAccent"
+            android:layout_width="50dp"
             android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:scaleType="fitCenter"
+            android:layout_margin="5dp"
             android:text="Random" />
     </LinearLayout>
 
