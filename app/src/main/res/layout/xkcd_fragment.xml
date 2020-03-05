@@ -23,10 +23,14 @@
 
     <com.ortiz.touchview.TouchImageView
         android:id="@+id/xkcd_img"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
         android:layout_marginTop="32dp"
+        android:layout_marginBottom="16dp"
+        android:adjustViewBounds="true"
         android:contentDescription="TODO: INSERT ALT TEXT HERE"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toTopOf="@+id/xkcd_alt_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/xkcd_title"
@@ -38,13 +42,13 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginLeft="32dp"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:layout_marginRight="32dp"
+        android:layout_marginBottom="32dp"
         app:fontFamily="@font/xkcd_script_family"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/xkcd_img"
         tools:text="ALT TEXT PLACEHOLDER" />
 
 
