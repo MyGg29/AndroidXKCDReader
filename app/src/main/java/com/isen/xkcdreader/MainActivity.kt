@@ -1,22 +1,24 @@
 package com.isen.xkcdreader
 
 
-import android.app.PendingIntent.getActivity
-import android.content.ContentValues
+import android.Manifest
 import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.viewpager.widget.ViewPager
 import java.net.URL
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.Bitmap
 import android.net.Uri
-import android.provider.MediaStore
-import android.util.Log
-import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
+
 import kotlinx.android.synthetic.main.activity_main.*
 
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity() {
@@ -69,26 +71,34 @@ class MainActivity : AppCompatActivity() {
         }
         randomButton.setOnClickListener { switchToRandomXKCD() }
         downloadButton.setOnClickListener{
-            saveImageToInternalStorage(R.drawable.placeholder, "title")
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if(checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                    saveCurrentXKCD()
+                }
+                else{
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1);
+                }
+            }
         }
     }
-    fun saveImageToInternalStorage(drawableId:Int, title: String): Uri {
-        // Get the image from drawable resource as drawable object
-        val drawable = ResourcesCompat.getDrawable(this.getResources(),drawableId, null)
 
-        // Get the bitmap from drawable object
-        val bitmap = (drawable as BitmapDrawable).bitmap
-
-        // Save image to gallery
-        val savedImageURL = MediaStore.Images.Media.insertImage(
-            contentResolver,
-            bitmap,
-            title,
-            "Image of $title"
-        )
-        Log.d("test",savedImageURL)
-        // Parse the gallery image url to uri
-        return Uri.parse(savedImageURL)
+    override fun onRequestPermissionsResult(requestCode :Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            Log.v("AndroidXKCD","Permission: "+permissions[0]+ "was "+grantResults[0])
+            saveCurrentXKCD()
+        }
+    }
+    private fun saveCurrentXKCD(){
+        val currentXkcd = xkcds[viewPager.currentItem]
+        saveImage(currentXkcd.img, currentXkcd.title, currentXkcd.url.toString())
+    }
+    private fun saveImage(bitmap: Bitmap, name: String, description: String = "") {
+        Log.v("AndroidXKCD", "Saving image: $name")
+        val savedUri = MediaStore.Images.Media.insertImage(contentResolver, bitmap,name, description)
+        val confirmationText =  getString(R.string.saveConfirmation) + savedUri
+        val toast = Toast.makeText(applicationContext, confirmationText, Toast.LENGTH_LONG)
+        toast.show()
     }
 
     private fun switchToRandomXKCD() {
