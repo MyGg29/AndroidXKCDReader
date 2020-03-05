@@ -2,4 +2,6 @@
     <string name="app_name">XKCDReader</string>
     <string name="share">Share</string>
     <string name="shareMessage">Checkout this XKCD !</string>
+    <string name="download">Download</string>
+    <string name="saveConfirmation">Saved to gallery at :</string>
 </resources>
