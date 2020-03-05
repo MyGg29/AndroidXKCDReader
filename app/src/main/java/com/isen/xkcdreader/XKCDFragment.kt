@@ -16,9 +16,7 @@ class XKCDFragment: Fragment() {
 
     companion object {
         fun newInstance(item : XKCDItem): XKCDFragment {
-
             val newFragment = XKCDFragment()
-
             newFragment.title = item.title
             newFragment.altText = item.alttext
             newFragment.img = item.img

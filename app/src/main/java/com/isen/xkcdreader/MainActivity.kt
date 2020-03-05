@@ -61,7 +61,20 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
         }
 
+        homeButton.setOnClickListener{
+                getLastXKCD()
+        }
+
         randomButton.setOnClickListener { switchToRandomXKCD() }
+    }
+
+    private fun updateXKCDDatabase(){
+
+    }
+
+    private fun getLastXKCD(){
+        //UPDATE FUNCTION
+        viewPager.currentItem = 0
     }
 
     private fun switchToRandomXKCD() {
