@@ -36,14 +36,12 @@ class MainActivity : AppCompatActivity() {
         latestXKCDIndex = intent.getIntExtra("XKCDLatestID", 1)
         Log.d("MainActivity", "latestXKCDIndex is $latestXKCDIndex")
 
-        // Make the placeholder bitmap (will be shared between XKCDs to avoid memory hogging
-        val bitmap : Bitmap = BitmapFactory.decodeResource(this.resources, R.drawable.placeholder)
-
         // TODO: check if savedInstanceState has saved state and if so recover it
 
         // TODO: replace this with network fetch
         // Probably only a few of XKCDs around the current one should be fetched
         // Dummy XKCDs for test purposes
+        val sharedPlaceholder = BitmapFactory.decodeResource(this.getResources(), R.drawable.placeholder)
         for (index in 0..latestXKCDIndex) {
             xkcds.add(
                 XKCDItem(
@@ -51,7 +49,7 @@ class MainActivity : AppCompatActivity() {
                     URL("https://xkcd.com/${index + 1}/"),
                     "This is the XKCD n°${index + 1}",
                     "This is the alt text for the XKCD n°${index + 1}.",
-                    bitmap
+                    sharedPlaceholder
                 )
             )
         }
