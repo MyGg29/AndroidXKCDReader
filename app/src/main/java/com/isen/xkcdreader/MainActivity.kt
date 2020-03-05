@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
 
                     Response.Listener { response_img ->
                         // Here we finally add the final XKCD with the proper image
-                        xkcds.add(tempXkcd.copy(img = response_img))
+                        xkcds.set(latestXKCDIndex, tempXkcd.copy(img = response_img))
                         pagerAdapter.notifyDataSetChanged()
                         viewPager.currentItem = xkcds.last().id
                     },
@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
                     Response.ErrorListener {
                         // If we can't get the image, we'll just add the temporary xkcd with the
                         // placeholder image
-                        xkcds.add(tempXkcd)
+                        xkcds.set(latestXKCDIndex, tempXkcd)
                         pagerAdapter.notifyDataSetChanged()
                         viewPager.currentItem = xkcds.last().id
                     }
