@@ -121,6 +121,9 @@ class MainActivity : AppCompatActivity() {
         pagerAdapter = XKCDFragmentStatePagerAdapter(supportFragmentManager, xkcds)
         viewPager.adapter = pagerAdapter
 
+        homeButton.setOnClickListener { getLastXKCD() }
+
+
         shareButton.setOnClickListener{
             val shareIntent = Intent()
             shareIntent.action = Intent.ACTION_SEND
@@ -144,6 +147,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     override fun onRequestPermissionsResult(requestCode :Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
@@ -166,5 +170,9 @@ class MainActivity : AppCompatActivity() {
     private fun switchToRandomXKCD() {
         val randomInt : Int = (0..latestXKCDIndex).random()
         viewPager.currentItem = randomInt
+    }
+
+    private  fun getLastXKCD(){
+        viewPager.currentItem = latestXKCDIndex
     }
 }
