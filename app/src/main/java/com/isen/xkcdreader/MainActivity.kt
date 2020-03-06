@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+
 
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -133,6 +133,7 @@ class MainActivity : AppCompatActivity() {
         // half loaded or if the connection is down
         val queue = Volley.newRequestQueue(this)
         val url = "https://xkcd.com/$xkcdNumber/info.0.json"
+        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
 
         // Request a string response from the provided URL.
         val jsonRequest = JsonObjectRequest(Request.Method.GET, url, null,
