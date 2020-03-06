@@ -17,6 +17,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.viewpager.widget.ViewPager
+import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.ImageRequest
@@ -70,6 +71,25 @@ class MainActivity : AppCompatActivity() {
         viewPager = findViewById(R.id.viewPager)
         pagerAdapter = XKCDFragmentStatePagerAdapter(supportFragmentManager, xkcds)
         viewPager.adapter = pagerAdapter
+        viewPager.addOnPageChangeListener(object : OnPageChangeListener{
+            override fun onPageSelected(position: Int) {
+                Log.d("onpageSelected", position.toString())
+                fetchXKCD(xkcds[position].id, false)
+            }
+
+            override fun onPageScrollStateChanged(state: Int) {
+                Log.d("onpagescrollstat", state.toString())
+            }
+
+            override fun onPageScrolled(
+                position: Int,
+                positionOffset: Float,
+                positionOffsetPixels: Int
+            ) {
+                Log.d("onpagescrolled", position.toString())
+            }
+
+        })
 
         shareButton.setOnClickListener{
             val shareIntent = Intent()
@@ -122,6 +142,7 @@ class MainActivity : AppCompatActivity() {
         fetchXKCD(randomInt - 2, false)
     }
     private fun fetchXKCD(xkcdNumber:Int, jump: Boolean){
+        if(xkcdNumber == 0) return
         // TODO: make a better code
         // This is completely asynchronous, I don't know how it will act if the activity is
         // half loaded or if the connection is down
