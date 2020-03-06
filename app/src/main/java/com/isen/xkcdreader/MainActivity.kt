@@ -71,6 +71,7 @@ class MainActivity : AppCompatActivity() {
         pagerAdapter = XKCDFragmentStatePagerAdapter(supportFragmentManager, xkcds)
         viewPager.adapter = pagerAdapter
 
+        homeButton.setOnClickListener { getLastXKCD() }
         shareButton.setOnClickListener{
             val shareIntent = Intent()
             shareIntent.action = Intent.ACTION_SEND
