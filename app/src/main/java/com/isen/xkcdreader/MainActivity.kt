@@ -29,7 +29,7 @@ import java.net.URL
 class MainActivity : AppCompatActivity() {
 
     private lateinit var viewPager: ViewPager
-    private val xkcds : ArrayList<XKCDItem> = arrayListOf()
+    private val xkcds : MutableList<XKCDItem> = mutableListOf()
     private lateinit var pagerAdapter: XKCDFragmentStatePagerAdapter
     private var latestXKCDIndex : Int = 0
 
@@ -47,82 +47,29 @@ class MainActivity : AppCompatActivity() {
 
         // TODO: replace this with network fetch
         // Probably only a few of XKCDs around the current one should be fetched
-        // Dummy XKCDs for test purposes
         val sharedPlaceholder = BitmapFactory.decodeResource(this.getResources(), R.drawable.placeholder)
         for (index in 0..latestXKCDIndex) {
             xkcds.add(
                 XKCDItem(
                     index,
-                    URL("https://xkcd.com/${index + 1}/"),
-                    "This is the XKCD n°${index + 1}",
-                    "This is the alt text for the XKCD n°${index + 1}.",
+                    URL("https://xkcd.com/${index}/"),
+                    "This is the XKCD n°${index}",
+                    "This is the alt text for the XKCD n°${index}.",
                     sharedPlaceholder
                 )
             )
         }
 
-        // END OF DUMMY DATA
-
-        // TODO: make a better code
-        // This is completely asynchronous, I don't know how it will act if the activity is
-        // half loaded or if the connection is down
-        val queue = Volley.newRequestQueue(this)
-        val url = "https://xkcd.com/info.0.json"
-
-        // Request a string response from the provided URL.
-        val jsonRequest = JsonObjectRequest(Request.Method.GET, url, null,
-
-            Response.Listener { response ->
-
-                // Display the response and save it temporarily
-                Log.d("Pulling data", "Response is: $response")
-                val tempXkcd = XKCDItem(
-                    response.getInt("num"),
-                    URL("https://xkcd.com/${response.getString("link")}"),
-                    response.getString("safe_title"),
-                    response.getString("alt"),
-                    BitmapFactory.decodeResource(this.resources,
-                        R.drawable.placeholder)
-                )
-
-                // Create a request to get the images
-                val imageRequest = ImageRequest(response.getString("img"),
-
-                    Response.Listener { response_img ->
-                        // Here we finally add the final XKCD with the proper image
-                        xkcds.set(latestXKCDIndex, tempXkcd.copy(img = response_img))
-                        pagerAdapter.notifyDataSetChanged()
-                        viewPager.currentItem = xkcds.last().id
-                    },
-                    1920, 1080, ImageView.ScaleType.FIT_CENTER, Bitmap.Config.RGB_565,
-
-                    Response.ErrorListener {
-                        // If we can't get the image, we'll just add the temporary xkcd with the
-                        // placeholder image
-                        xkcds.set(latestXKCDIndex, tempXkcd)
-                        pagerAdapter.notifyDataSetChanged()
-                        viewPager.currentItem = xkcds.last().id
-                    }
-                )
-
-                queue.add(imageRequest)
-            },
-
-            Response.ErrorListener {
-                Log.e("Volley", "Error while waiting for response", it)
-            }
-        )
-
-        // Add the request to the RequestQueue.
-        queue.add(jsonRequest)
+        fetchXKCD(latestXKCDIndex, true)
+        fetchXKCD(latestXKCDIndex - 1, false)
+        fetchXKCD(latestXKCDIndex - 2, false)
+        fetchXKCD(latestXKCDIndex - 3, false)
+        fetchXKCD(latestXKCDIndex - 4, false)
 
         setContentView(R.layout.activity_main)
         viewPager = findViewById(R.id.viewPager)
         pagerAdapter = XKCDFragmentStatePagerAdapter(supportFragmentManager, xkcds)
         viewPager.adapter = pagerAdapter
-
-        homeButton.setOnClickListener { getLastXKCD() }
-
 
         shareButton.setOnClickListener{
             val shareIntent = Intent()
@@ -147,7 +94,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     override fun onRequestPermissionsResult(requestCode :Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
@@ -168,8 +114,77 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun switchToRandomXKCD() {
-        val randomInt : Int = (0..latestXKCDIndex).random()
-        viewPager.currentItem = randomInt
+        val randomInt : Int = (0..xkcds.size).random()
+        fetchXKCD(randomInt + 1, false)
+        fetchXKCD(randomInt + 2, false)
+        fetchXKCD(randomInt, true)
+        fetchXKCD(randomInt - 1, false)
+        fetchXKCD(randomInt - 2, false)
+    }
+    private fun fetchXKCD(xkcdNumber:Int, jump: Boolean){
+        // TODO: make a better code
+        // This is completely asynchronous, I don't know how it will act if the activity is
+        // half loaded or if the connection is down
+        val queue = Volley.newRequestQueue(this)
+        val url = "https://xkcd.com/$xkcdNumber/info.0.json"
+
+        // Request a string response from the provided URL.
+        val jsonRequest = JsonObjectRequest(Request.Method.GET, url, null,
+
+            Response.Listener { response ->
+
+                // Display the response and save it temporarily
+                Log.d("Pulling data", "Response is: $response")
+                val tempXkcd = XKCDItem(
+                    response.getInt("num"),
+                    URL("https://xkcd.com/${response.getString("link")}"),
+                    response.getString("safe_title"),
+                    response.getString("alt"),
+                    BitmapFactory.decodeResource(this.resources,
+                        R.drawable.placeholder)
+                )
+
+                // Create a request to get the images
+                val imageRequest = ImageRequest(response.getString("img"),
+
+                    Response.Listener { response_img ->
+                        // Here we finally add the final XKCD with the proper image
+                        placeXkcd(tempXkcd.copy(img = response_img), xkcdNumber)
+                        //xkcds[xkcds.size] = tempXkcd.copy(img = response_img)
+                        pagerAdapter.notifyDataSetChanged()
+                        if (jump) {
+                            viewPager.currentItem = xkcdNumber
+                        }
+                    },
+                    1920, 1080, ImageView.ScaleType.FIT_CENTER, Bitmap.Config.RGB_565,
+
+                    Response.ErrorListener {
+                        // If we can't get the image, we'll just add the temporary xkcd with the
+                        // placeholder image
+                        xkcds.add(tempXkcd)
+                        pagerAdapter.notifyDataSetChanged()
+                    }
+                )
+
+                queue.add(imageRequest)
+            },
+
+            Response.ErrorListener {
+                Log.e("Volley", "Error while waiting for response", it)
+            }
+        )
+
+        // Add the request to the RequestQueue.
+        queue.add(jsonRequest)
+    }
+
+    private fun placeXkcd(xkcdItem: XKCDItem, index:Int){
+        if(xkcds.size < index){
+            xkcds.add(xkcdItem)
+        }
+        else{
+            xkcds[index] = xkcdItem
+        }
     }
 
     private  fun getLastXKCD(){
