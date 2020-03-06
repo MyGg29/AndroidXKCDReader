@@ -29,7 +29,7 @@ import java.net.URL
 class MainActivity : AppCompatActivity() {
 
     private lateinit var viewPager: ViewPager
-    private val xkcds : ArrayList<XKCDItem> = arrayListOf()
+    private val xkcds : MutableList<XKCDItem> = mutableListOf()
     private lateinit var pagerAdapter: XKCDFragmentStatePagerAdapter
     private var latestXKCDIndex : Int = 0
 
@@ -47,7 +47,19 @@ class MainActivity : AppCompatActivity() {
 
         // TODO: replace this with network fetch
         // Probably only a few of XKCDs around the current one should be fetched
-        // Dummy XKCDs for test purposes
+        val sharedPlaceholder = BitmapFactory.decodeResource(this.getResources(), R.drawable.placeholder)
+        for (index in 0..latestXKCDIndex) {
+            xkcds.add(
+                XKCDItem(
+                    index,
+                    URL("https://xkcd.com/${index}/"),
+                    "This is the XKCD n°${index}",
+                    "This is the alt text for the XKCD n°${index}.",
+                    sharedPlaceholder
+                )
+            )
+        }
+
         fetchXKCD(latestXKCDIndex)
         fetchXKCD(latestXKCDIndex - 1)
         fetchXKCD(latestXKCDIndex - 2)
@@ -165,7 +177,7 @@ class MainActivity : AppCompatActivity() {
             xkcds.add(xkcdItem)
         }
         else{
-            xkcds.add(index,xkcdItem)
+            xkcds[index] = xkcdItem
         }
     }
 }
