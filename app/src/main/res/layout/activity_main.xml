@@ -27,6 +27,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/viewPager">
 
+
+        <ImageButton
+            android:id="@+id/homeButton"
+            android:src="@drawable/ic_home_button_for_interface"
+            android:padding="5dp"
+            android:tint="@color/colorAccent"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:layout_margin="5dp"
+            android:scaleType="fitCenter" />
+
+
+
         <ImageButton
             android:id="@+id/downloadButton"
             android:src="@drawable/ic_download"

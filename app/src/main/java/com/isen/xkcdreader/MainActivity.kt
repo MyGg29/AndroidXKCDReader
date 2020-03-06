@@ -177,6 +177,7 @@ class MainActivity : AppCompatActivity() {
         // Add the request to the RequestQueue.
         queue.add(jsonRequest)
     }
+
     private fun placeXkcd(xkcdItem: XKCDItem, index:Int){
         if(xkcds.size < index){
             xkcds.add(xkcdItem)
@@ -184,5 +185,9 @@ class MainActivity : AppCompatActivity() {
         else{
             xkcds[index] = xkcdItem
         }
+    }
+
+    private  fun getLastXKCD(){
+        viewPager.currentItem = latestXKCDIndex
     }
 }
