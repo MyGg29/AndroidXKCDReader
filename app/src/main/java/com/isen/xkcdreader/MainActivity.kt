@@ -2,6 +2,7 @@ package com.isen.xkcdreader
 
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,6 +10,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.provider.MediaStore
 import android.util.Log
 import android.view.WindowManager
@@ -35,6 +37,8 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -60,6 +64,8 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
+
+
 
         // END OF DUMMY DATA
 
@@ -92,7 +98,9 @@ class MainActivity : AppCompatActivity() {
                         // Here we finally add the final XKCD with the proper image
                         xkcds.set(latestXKCDIndex, tempXkcd.copy(img = response_img))
                         pagerAdapter.notifyDataSetChanged()
-                        viewPager.currentItem = xkcds.last().id
+                        //viewPager.currentItem =
+                        viewPager.currentItem = sharedPreference.getInt("id_last_xkcd",xkcds.last().id)
+
                     },
                     1920, 1080, ImageView.ScaleType.FIT_CENTER, Bitmap.Config.RGB_565,
 
@@ -145,6 +153,35 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+    }
+
+    var doubleBackToExitOnce:Boolean = false
+
+    override fun onBackPressed() {
+
+
+
+
+        if(doubleBackToExitOnce){
+            super.onBackPressed()
+            return
+        }
+
+        this.doubleBackToExitOnce = true
+
+        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+        var editor = sharedPreference.edit()
+        editor.putInt("id_last_xkcd",viewPager.currentItem)
+        editor.commit()
+
+
+        //displays the toast message for a while
+        Handler().postDelayed({
+            kotlin.run { doubleBackToExitOnce = false }
+        }, 2000)
+
+
     }
 
 
