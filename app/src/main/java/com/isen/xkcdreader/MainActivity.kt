@@ -74,7 +74,11 @@ class MainActivity : AppCompatActivity() {
         viewPager.addOnPageChangeListener(object : OnPageChangeListener{
             override fun onPageSelected(position: Int) {
                 Log.d("onpageSelected", position.toString())
-                fetchXKCD(xkcds[position].id, false)
+                fetchXKCD(position + 1, false)
+                fetchXKCD(position + 2, false)
+                fetchXKCD(position, false)
+                fetchXKCD(position - 1, false)
+                fetchXKCD(position - 2, false)
             }
 
             override fun onPageScrollStateChanged(state: Int) {
