@@ -106,12 +106,13 @@ class MainActivity : AppCompatActivity() {
 
         })
 
+        homeButton.setOnClickListener { getLastXKCD() }
         shareButton.setOnClickListener{
             val shareIntent = Intent()
             shareIntent.action = Intent.ACTION_SEND
-            //val uriToXKCD = Uri.parse("https://imgs.xkcd.com/comics/stargazing_3.png")
-            val uriToXKCD = Uri.parse("android.resource://com.isen.xkcdreader/" + R.drawable.placeholder)
-            shareIntent.putExtra(Intent.EXTRA_STREAM, uriToXKCD)
+            val uri = saveCurrentXKCD()
+            val img = Uri.parse(uri)
+            shareIntent.putExtra(Intent.EXTRA_STREAM, img)
             shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.shareMessage))
             shareIntent.type = "image/png"
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
@@ -136,16 +137,17 @@ class MainActivity : AppCompatActivity() {
             saveCurrentXKCD()
         }
     }
-    private fun saveCurrentXKCD(){
+    private fun saveCurrentXKCD() : String {
         val currentXkcd = xkcds[viewPager.currentItem]
-        saveImage(currentXkcd.img, currentXkcd.title, currentXkcd.url.toString())
+        return saveImage(currentXkcd.img, currentXkcd.title, currentXkcd.url.toString())
     }
-    private fun saveImage(bitmap: Bitmap, name: String, description: String = "") {
+    private fun saveImage(bitmap: Bitmap, name: String, description: String = "") : String {
         Log.v("AndroidXKCD", "Saving image: $name")
-        val savedUri = MediaStore.Images.Media.insertImage(contentResolver, bitmap,name, description)
-        val confirmationText =  getString(R.string.saveConfirmation) + savedUri
+        val savedUri = MediaStore.Images.Media.insertImage(contentResolver, bitmap, name, description)
+        val confirmationText = getString(R.string.saveConfirmation) + savedUri
         val toast = Toast.makeText(applicationContext, confirmationText, Toast.LENGTH_LONG)
         toast.show()
+        return savedUri;
     }
 
     private fun switchToRandomXKCD() {
