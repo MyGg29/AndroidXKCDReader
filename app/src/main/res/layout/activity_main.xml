@@ -30,6 +30,8 @@
 
         <ImageButton
             android:id="@+id/homeButton"
+            android:layout_weight="0.25"
+            android:layout_gravity="center"
             android:src="@drawable/ic_home_button_for_interface"
             android:padding="5dp"
             android:tint="@color/colorAccent"
@@ -44,10 +46,12 @@
         <ImageButton
             android:id="@+id/downloadButton"
             android:src="@drawable/ic_download"
+            android:layout_weight="0.25"
             android:padding="5dp"
             android:tint="@color/colorAccent"
             android:layout_width="50dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:background="@color/colorPrimary"
             android:layout_margin="5dp"
             android:scaleType="fitCenter" />
@@ -57,8 +61,10 @@
             android:id="@+id/shareButton"
             android:src="@drawable/ic_share_alt"
             android:padding="5dp"
+            android:layout_weight="0.25"
             android:tint="@color/colorAccent"
             android:layout_width="50dp"
+            android:layout_gravity="center"
             android:layout_height="wrap_content"
             android:background="@color/colorPrimary"
             android:layout_margin="5dp"
@@ -70,6 +76,8 @@
             android:padding="5dp"
             android:tint="@color/colorAccent"
             android:layout_width="50dp"
+            android:layout_weight="0.25"
+            android:layout_gravity="center"
             android:layout_height="wrap_content"
             android:background="@color/colorPrimary"
             android:scaleType="fitCenter"

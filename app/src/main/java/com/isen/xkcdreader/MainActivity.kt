@@ -2,6 +2,7 @@ package com.isen.xkcdreader
 
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,6 +10,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.provider.MediaStore
 import android.util.Log
 import android.view.WindowManager
@@ -36,6 +38,8 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -106,12 +110,13 @@ class MainActivity : AppCompatActivity() {
 
         })
 
+        homeButton.setOnClickListener { getLastXKCD() }
         shareButton.setOnClickListener{
             val shareIntent = Intent()
             shareIntent.action = Intent.ACTION_SEND
-            //val uriToXKCD = Uri.parse("https://imgs.xkcd.com/comics/stargazing_3.png")
-            val uriToXKCD = Uri.parse("android.resource://com.isen.xkcdreader/" + R.drawable.placeholder)
-            shareIntent.putExtra(Intent.EXTRA_STREAM, uriToXKCD)
+            val uri = saveCurrentXKCD()
+            val img = Uri.parse(uri)
+            shareIntent.putExtra(Intent.EXTRA_STREAM, img)
             shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.shareMessage))
             shareIntent.type = "image/png"
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
@@ -136,16 +141,17 @@ class MainActivity : AppCompatActivity() {
             saveCurrentXKCD()
         }
     }
-    private fun saveCurrentXKCD(){
+    private fun saveCurrentXKCD() : String {
         val currentXkcd = xkcds[viewPager.currentItem]
-        saveImage(currentXkcd.img, currentXkcd.title, currentXkcd.url.toString())
+        return saveImage(currentXkcd.img, currentXkcd.title, currentXkcd.url.toString())
     }
-    private fun saveImage(bitmap: Bitmap, name: String, description: String = "") {
+    private fun saveImage(bitmap: Bitmap, name: String, description: String = "") : String {
         Log.v("AndroidXKCD", "Saving image: $name")
-        val savedUri = MediaStore.Images.Media.insertImage(contentResolver, bitmap,name, description)
-        val confirmationText =  getString(R.string.saveConfirmation) + savedUri
+        val savedUri = MediaStore.Images.Media.insertImage(contentResolver, bitmap, name, description)
+        val confirmationText = getString(R.string.saveConfirmation) + savedUri
         val toast = Toast.makeText(applicationContext, confirmationText, Toast.LENGTH_LONG)
         toast.show()
+        return savedUri;
     }
 
     private fun switchToRandomXKCD() {
@@ -163,6 +169,7 @@ class MainActivity : AppCompatActivity() {
         // half loaded or if the connection is down
         val queue = Volley.newRequestQueue(this)
         val url = "https://xkcd.com/$xkcdNumber/info.0.json"
+        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
 
         // Request a string response from the provided URL.
         val jsonRequest = JsonObjectRequest(Request.Method.GET, url, null,
@@ -188,6 +195,10 @@ class MainActivity : AppCompatActivity() {
                         placeXkcd(tempXkcd.copy(img = response_img), xkcdNumber)
                         //xkcds[xkcds.size] = tempXkcd.copy(img = response_img)
                         pagerAdapter.notifyDataSetChanged()
+                        //viewPager.currentItem =
+                        viewPager.currentItem = sharedPreference.getInt("id_last_xkcd",xkcds.last().id)
+
+
                         if (jump) {
                             viewPager.currentItem = xkcdNumber
                         }
@@ -212,6 +223,66 @@ class MainActivity : AppCompatActivity() {
 
         // Add the request to the RequestQueue.
         queue.add(jsonRequest)
+
+        setContentView(R.layout.activity_main)
+        viewPager = findViewById(R.id.viewPager)
+        pagerAdapter = XKCDFragmentStatePagerAdapter(supportFragmentManager, xkcds)
+        viewPager.adapter = pagerAdapter
+
+        homeButton.setOnClickListener { getLastXKCD() }
+
+
+        shareButton.setOnClickListener{
+            val shareIntent = Intent()
+            shareIntent.action = Intent.ACTION_SEND
+            //val uriToXKCD = Uri.parse("https://imgs.xkcd.com/comics/stargazing_3.png")
+            val uriToXKCD = Uri.parse("android.resource://com.isen.xkcdreader/" + R.drawable.placeholder)
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uriToXKCD)
+            shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.shareMessage))
+            shareIntent.type = "image/png"
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
+        }
+        randomButton.setOnClickListener { switchToRandomXKCD() }
+        downloadButton.setOnClickListener{
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if(checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                    saveCurrentXKCD()
+                }
+                else{
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1);
+                }
+            }
+        }
+
+    }
+
+    var doubleBackToExitOnce:Boolean = false
+
+    override fun onBackPressed() {
+
+
+
+
+        if(doubleBackToExitOnce){
+            super.onBackPressed()
+            return
+        }
+
+        this.doubleBackToExitOnce = true
+
+        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+        var editor = sharedPreference.edit()
+        editor.putInt("id_last_xkcd",viewPager.currentItem)
+        editor.commit()
+
+
+        //displays the toast message for a while
+        Handler().postDelayed({
+            kotlin.run { doubleBackToExitOnce = false }
+        }, 2000)
+
+
+
     }
 
     private fun placeXkcd(xkcdItem: XKCDItem, index:Int){
