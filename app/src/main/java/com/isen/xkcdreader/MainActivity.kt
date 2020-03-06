@@ -31,7 +31,7 @@ import java.net.URL
 class MainActivity : AppCompatActivity() {
 
     private lateinit var viewPager: ViewPager
-    private val xkcds : ArrayList<XKCDItem> = arrayListOf()
+    private val xkcds : MutableList<XKCDItem> = mutableListOf()
     private lateinit var pagerAdapter: XKCDFragmentStatePagerAdapter
     private var latestXKCDIndex : Int = 0
 
@@ -51,29 +51,88 @@ class MainActivity : AppCompatActivity() {
 
         // TODO: replace this with network fetch
         // Probably only a few of XKCDs around the current one should be fetched
-        // Dummy XKCDs for test purposes
         val sharedPlaceholder = BitmapFactory.decodeResource(this.getResources(), R.drawable.placeholder)
         for (index in 0..latestXKCDIndex) {
             xkcds.add(
                 XKCDItem(
                     index,
-                    URL("https://xkcd.com/${index + 1}/"),
-                    "This is the XKCD n°${index + 1}",
-                    "This is the alt text for the XKCD n°${index + 1}.",
+                    URL("https://xkcd.com/${index}/"),
+                    "This is the XKCD n°${index}",
+                    "This is the alt text for the XKCD n°${index}.",
                     sharedPlaceholder
                 )
             )
         }
 
+        fetchXKCD(latestXKCDIndex, true)
+        fetchXKCD(latestXKCDIndex - 1, false)
+        fetchXKCD(latestXKCDIndex - 2, false)
+        fetchXKCD(latestXKCDIndex - 3, false)
+        fetchXKCD(latestXKCDIndex - 4, false)
 
+        setContentView(R.layout.activity_main)
+        viewPager = findViewById(R.id.viewPager)
+        pagerAdapter = XKCDFragmentStatePagerAdapter(supportFragmentManager, xkcds)
+        viewPager.adapter = pagerAdapter
 
-        // END OF DUMMY DATA
+        homeButton.setOnClickListener { getLastXKCD() }
+        shareButton.setOnClickListener{
+            val shareIntent = Intent()
+            shareIntent.action = Intent.ACTION_SEND
+            val uri = saveCurrentXKCD()
+            val img = Uri.parse(uri)
+            shareIntent.putExtra(Intent.EXTRA_STREAM, img)
+            shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.shareMessage))
+            shareIntent.type = "image/png"
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
+        }
+        randomButton.setOnClickListener { switchToRandomXKCD() }
+        downloadButton.setOnClickListener{
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if(checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                    saveCurrentXKCD()
+                }
+                else{
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1);
+                }
+            }
+        }
+    }
 
+    override fun onRequestPermissionsResult(requestCode :Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            Log.v("AndroidXKCD","Permission: "+permissions[0]+ "was "+grantResults[0])
+            saveCurrentXKCD()
+        }
+    }
+    private fun saveCurrentXKCD() : String {
+        val currentXkcd = xkcds[viewPager.currentItem]
+        return saveImage(currentXkcd.img, currentXkcd.title, currentXkcd.url.toString())
+    }
+    private fun saveImage(bitmap: Bitmap, name: String, description: String = "") : String {
+        Log.v("AndroidXKCD", "Saving image: $name")
+        val savedUri = MediaStore.Images.Media.insertImage(contentResolver, bitmap, name, description)
+        val confirmationText = getString(R.string.saveConfirmation) + savedUri
+        val toast = Toast.makeText(applicationContext, confirmationText, Toast.LENGTH_LONG)
+        toast.show()
+        return savedUri;
+    }
+
+    private fun switchToRandomXKCD() {
+        val randomInt : Int = (0..xkcds.size).random()
+        fetchXKCD(randomInt + 1, false)
+        fetchXKCD(randomInt + 2, false)
+        fetchXKCD(randomInt, true)
+        fetchXKCD(randomInt - 1, false)
+        fetchXKCD(randomInt - 2, false)
+    }
+    private fun fetchXKCD(xkcdNumber:Int, jump: Boolean){
         // TODO: make a better code
         // This is completely asynchronous, I don't know how it will act if the activity is
         // half loaded or if the connection is down
         val queue = Volley.newRequestQueue(this)
-        val url = "https://xkcd.com/info.0.json"
+        val url = "https://xkcd.com/$xkcdNumber/info.0.json"
 
         // Request a string response from the provided URL.
         val jsonRequest = JsonObjectRequest(Request.Method.GET, url, null,
@@ -96,20 +155,24 @@ class MainActivity : AppCompatActivity() {
 
                     Response.Listener { response_img ->
                         // Here we finally add the final XKCD with the proper image
-                        xkcds.set(latestXKCDIndex, tempXkcd.copy(img = response_img))
+                        placeXkcd(tempXkcd.copy(img = response_img), xkcdNumber)
+                        //xkcds[xkcds.size] = tempXkcd.copy(img = response_img)
                         pagerAdapter.notifyDataSetChanged()
                         //viewPager.currentItem =
                         viewPager.currentItem = sharedPreference.getInt("id_last_xkcd",xkcds.last().id)
 
+
+                        if (jump) {
+                            viewPager.currentItem = xkcdNumber
+                        }
                     },
                     1920, 1080, ImageView.ScaleType.FIT_CENTER, Bitmap.Config.RGB_565,
 
                     Response.ErrorListener {
                         // If we can't get the image, we'll just add the temporary xkcd with the
                         // placeholder image
-                        xkcds.set(latestXKCDIndex, tempXkcd)
+                        xkcds.add(tempXkcd)
                         pagerAdapter.notifyDataSetChanged()
-                        viewPager.currentItem = xkcds.last().id
                     }
                 )
 
@@ -182,31 +245,16 @@ class MainActivity : AppCompatActivity() {
         }, 2000)
 
 
+
     }
 
-
-    override fun onRequestPermissionsResult(requestCode :Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-            Log.v("AndroidXKCD","Permission: "+permissions[0]+ "was "+grantResults[0])
-            saveCurrentXKCD()
+    private fun placeXkcd(xkcdItem: XKCDItem, index:Int){
+        if(xkcds.size < index){
+            xkcds.add(xkcdItem)
         }
-    }
-    private fun saveCurrentXKCD(){
-        val currentXkcd = xkcds[viewPager.currentItem]
-        saveImage(currentXkcd.img, currentXkcd.title, currentXkcd.url.toString())
-    }
-    private fun saveImage(bitmap: Bitmap, name: String, description: String = "") {
-        Log.v("AndroidXKCD", "Saving image: $name")
-        val savedUri = MediaStore.Images.Media.insertImage(contentResolver, bitmap,name, description)
-        val confirmationText =  getString(R.string.saveConfirmation) + savedUri
-        val toast = Toast.makeText(applicationContext, confirmationText, Toast.LENGTH_LONG)
-        toast.show()
-    }
-
-    private fun switchToRandomXKCD() {
-        val randomInt : Int = (0..latestXKCDIndex).random()
-        viewPager.currentItem = randomInt
+        else{
+            xkcds[index] = xkcdItem
+        }
     }
 
     private  fun getLastXKCD(){
