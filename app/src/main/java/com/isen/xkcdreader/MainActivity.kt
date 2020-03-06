@@ -173,6 +173,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private  fun getLastXKCD(){
-        viewPager.currentItem = 0
+        viewPager.currentItem = latestXKCDIndex
     }
 }
