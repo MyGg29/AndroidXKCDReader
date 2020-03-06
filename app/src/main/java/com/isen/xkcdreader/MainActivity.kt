@@ -60,11 +60,11 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        fetchXKCD(latestXKCDIndex)
-        fetchXKCD(latestXKCDIndex - 1)
-        fetchXKCD(latestXKCDIndex - 2)
-        fetchXKCD(latestXKCDIndex - 3)
-        fetchXKCD(latestXKCDIndex - 4)
+        fetchXKCD(latestXKCDIndex, true)
+        fetchXKCD(latestXKCDIndex - 1, false)
+        fetchXKCD(latestXKCDIndex - 2, false)
+        fetchXKCD(latestXKCDIndex - 3, false)
+        fetchXKCD(latestXKCDIndex - 4, false)
 
         setContentView(R.layout.activity_main)
         viewPager = findViewById(R.id.viewPager)
@@ -115,9 +115,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun switchToRandomXKCD() {
         val randomInt : Int = (0..xkcds.size).random()
-        viewPager.currentItem = randomInt
+        fetchXKCD(randomInt + 1, false)
+        fetchXKCD(randomInt + 2, false)
+        fetchXKCD(randomInt, true)
+        fetchXKCD(randomInt - 1, false)
+        fetchXKCD(randomInt - 2, false)
     }
-    private fun fetchXKCD(xkcdNumber:Int){
+    private fun fetchXKCD(xkcdNumber:Int, jump: Boolean){
         // TODO: make a better code
         // This is completely asynchronous, I don't know how it will act if the activity is
         // half loaded or if the connection is down
@@ -148,7 +152,9 @@ class MainActivity : AppCompatActivity() {
                         placeXkcd(tempXkcd.copy(img = response_img), xkcdNumber)
                         //xkcds[xkcds.size] = tempXkcd.copy(img = response_img)
                         pagerAdapter.notifyDataSetChanged()
-                        viewPager.currentItem = xkcds.last().id
+                        if (jump) {
+                            viewPager.currentItem = xkcdNumber
+                        }
                     },
                     1920, 1080, ImageView.ScaleType.FIT_CENTER, Bitmap.Config.RGB_565,
 
@@ -157,7 +163,6 @@ class MainActivity : AppCompatActivity() {
                         // placeholder image
                         xkcds.add(tempXkcd)
                         pagerAdapter.notifyDataSetChanged()
-                        viewPager.currentItem = xkcds.last().id
                     }
                 )
 
