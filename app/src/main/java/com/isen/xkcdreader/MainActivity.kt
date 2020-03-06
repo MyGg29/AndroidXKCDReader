@@ -2,6 +2,7 @@ package com.isen.xkcdreader
 
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,6 +10,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.provider.MediaStore
 import android.util.Log
 import android.view.WindowManager
@@ -35,6 +37,8 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -154,6 +158,10 @@ class MainActivity : AppCompatActivity() {
                         placeXkcd(tempXkcd.copy(img = response_img), xkcdNumber)
                         //xkcds[xkcds.size] = tempXkcd.copy(img = response_img)
                         pagerAdapter.notifyDataSetChanged()
+                        //viewPager.currentItem =
+                        viewPager.currentItem = sharedPreference.getInt("id_last_xkcd",xkcds.last().id)
+
+
                         if (jump) {
                             viewPager.currentItem = xkcdNumber
                         }
@@ -178,6 +186,66 @@ class MainActivity : AppCompatActivity() {
 
         // Add the request to the RequestQueue.
         queue.add(jsonRequest)
+
+        setContentView(R.layout.activity_main)
+        viewPager = findViewById(R.id.viewPager)
+        pagerAdapter = XKCDFragmentStatePagerAdapter(supportFragmentManager, xkcds)
+        viewPager.adapter = pagerAdapter
+
+        homeButton.setOnClickListener { getLastXKCD() }
+
+
+        shareButton.setOnClickListener{
+            val shareIntent = Intent()
+            shareIntent.action = Intent.ACTION_SEND
+            //val uriToXKCD = Uri.parse("https://imgs.xkcd.com/comics/stargazing_3.png")
+            val uriToXKCD = Uri.parse("android.resource://com.isen.xkcdreader/" + R.drawable.placeholder)
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uriToXKCD)
+            shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.shareMessage))
+            shareIntent.type = "image/png"
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
+        }
+        randomButton.setOnClickListener { switchToRandomXKCD() }
+        downloadButton.setOnClickListener{
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if(checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                    saveCurrentXKCD()
+                }
+                else{
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1);
+                }
+            }
+        }
+
+    }
+
+    var doubleBackToExitOnce:Boolean = false
+
+    override fun onBackPressed() {
+
+
+
+
+        if(doubleBackToExitOnce){
+            super.onBackPressed()
+            return
+        }
+
+        this.doubleBackToExitOnce = true
+
+        val sharedPreference =  getSharedPreferences("PREFERENCE_NAME", Context.MODE_PRIVATE)
+        var editor = sharedPreference.edit()
+        editor.putInt("id_last_xkcd",viewPager.currentItem)
+        editor.commit()
+
+
+        //displays the toast message for a while
+        Handler().postDelayed({
+            kotlin.run { doubleBackToExitOnce = false }
+        }, 2000)
+
+
+
     }
 
     private fun placeXkcd(xkcdItem: XKCDItem, index:Int){
